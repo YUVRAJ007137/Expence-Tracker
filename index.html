@@ -51,20 +51,26 @@
 <body class="p-3">
   <div class="container my-4">
     <h2 class="text-center mb-4 text-primary fw-bold">
-    खर्च व्यवस्थापन प्रणाली | Expense Tracker
+      खर्च व्यवस्थापन प्रणाली | Expense Tracker
     </h2>
 
     <!-- Summary -->
-    <div class="row mb-4 text-center">
-      <div class="col-md-6 mb-2">
+    <div class="row mb-4 text-center g-3">
+      <div class="col-md-4 col-sm-12">
         <div class="summary-card p-3">
-          <h5 class="text-success fw-bold">एकूण भरलेले / Total Paid:</h5>
+          <h5 class="text-primary fw-bold">एकूण खर्च / Total:</h5>
+          <h3 id="totalAmount" class="fw-bold">₹0</h3>
+        </div>
+      </div>
+      <div class="col-md-4 col-sm-12">
+        <div class="summary-card p-3">
+          <h5 class="text-success fw-bold">भरलेले / Paid:</h5>
           <h3 id="totalPaid" class="fw-bold">₹0</h3>
         </div>
       </div>
-      <div class="col-md-6 mb-2">
+      <div class="col-md-4 col-sm-12">
         <div class="summary-card p-3">
-          <h5 class="text-danger fw-bold">बाकी रक्कम / Pending:</h5>
+          <h5 class="text-danger fw-bold">बाकी / Pending:</h5>
           <h3 id="totalPending" class="fw-bold">₹0</h3>
         </div>
       </div>
@@ -77,6 +83,11 @@
         <div class="col-md-4">
           <label class="form-label">व्यापारी / Merchant Name</label>
           <input type="text" id="merchant" class="form-control" placeholder="Enter merchant name" />
+        </div>
+
+        <div class="col-md-4">
+          <label class="form-label">तारीख / Date</label>
+          <input type="date" id="date" class="form-control" />
         </div>
 
         <div class="col-md-4">
@@ -132,10 +143,12 @@
     const advance = document.getElementById("advance");
     const total = document.getElementById("total");
     const mode = document.getElementById("mode");
+    const dateInput = document.getElementById("date");
     const addExpenseBtn = document.getElementById("addExpense");
     const expenseTable = document.getElementById("expenseTable");
     const totalPaidEl = document.getElementById("totalPaid");
     const totalPendingEl = document.getElementById("totalPending");
+    const totalAmountEl = document.getElementById("totalAmount");
 
     let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
 
@@ -147,9 +160,7 @@
       expenses.forEach((exp, index) => {
         const remaining = exp.total - exp.advance;
 
-        // ✅ Calculation logic updated:
-        // Advance always adds to paid
-        // Remaining adds to pending until fully paid
+        // ✅ Correct logic for calculations
         if (exp.paid) {
           totalPaid += exp.total;
         } else {
@@ -180,8 +191,10 @@
         expenseTable.appendChild(row);
       });
 
+      const totalAll = totalPaid + totalPending;
       totalPaidEl.textContent = `₹${totalPaid}`;
       totalPendingEl.textContent = `₹${totalPending}`;
+      totalAmountEl.textContent = `₹${totalAll}`;
       localStorage.setItem("expenses", JSON.stringify(expenses));
     }
 
@@ -196,15 +209,14 @@
     }
 
     addExpenseBtn.addEventListener("click", () => {
-      if (!merchant.value || !total.value) {
+      if (!merchant.value || !total.value || !dateInput.value) {
         alert("Please fill all required fields");
         return;
       }
 
-      const date = new Date().toLocaleString();
       const newExpense = {
         merchant: merchant.value,
-        date,
+        date: dateInput.value,
         advance: parseFloat(advance.value) || 0,
         total: parseFloat(total.value),
         mode: mode.value,
@@ -215,6 +227,7 @@
       merchant.value = "";
       advance.value = "";
       total.value = "";
+      dateInput.value = "";
       renderTable();
     });
 
