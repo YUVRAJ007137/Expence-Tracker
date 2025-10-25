@@ -148,11 +148,62 @@
 
       let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
 
-      // ✅ Improved date formatter (handles old formats too)
-      function formatDate(dateStr) {
+      // Migrate old date formats to ISO format (YYYY-MM-DD)
+      function migrateDates() {
+        let needsSave = false;
+        expenses = expenses.map(exp => {
+          // If date is already in ISO format, skip
+          if (/^\d{4}-\d{2}-\d{2}$/.test(exp.date)) {
+            return exp;
+          }
+          
+          needsSave = true;
+          let isoDate = exp.date;
+          
+          // Convert "DD MMM YYYY" to ISO
+          if (/^\d{1,2}\s+\w{3}\s+\d{4}$/.test(exp.date)) {
+            const parts = exp.date.split(' ');
+            const day = parts[0].padStart(2, '0');
+            const monthMap = {
+              'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
+              'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
+              'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+            };
+            const month = monthMap[parts[1]];
+            const year = parts[2];
+            isoDate = `${year}-${month}-${day}`;
+          }
+          // Convert "DD-MM-YYYY" to ISO
+          else if (/^\d{2}-\d{2}-\d{4}$/.test(exp.date)) {
+            const [day, month, year] = exp.date.split("-");
+            isoDate = `${year}-${month}-${day}`;
+          }
+          
+          return { ...exp, date: isoDate };
+        });
+        
+        if (needsSave) {
+          saveData();
+          console.log("Migrated dates to ISO format");
+        }
+      }
+
+      migrateDates();
+
+      // Format date for display only
+      function formatDateForDisplay(dateStr) {
         if (!dateStr) return "";
         try {
-          // handle old "DD-MM-YYYY"
+          // Handle ISO format (YYYY-MM-DD)
+          if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+            const date = new Date(dateStr + 'T00:00:00');
+            return date.toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            });
+          }
+          // Handle old "DD-MM-YYYY" format
           if (/^\d{2}-\d{2}-\d{4}$/.test(dateStr)) {
             const [day, month, year] = dateStr.split("-");
             return new Date(`${year}-${month}-${day}`).toLocaleDateString("en-GB", {
@@ -161,14 +212,10 @@
               year: "numeric",
             });
           }
-          // handle standard yyyy-mm-dd
-          const date = new Date(dateStr);
-          if (!isNaN(date))
-            return date.toLocaleDateString("en-GB", {
-              day: "2-digit",
-              month: "short",
-              year: "numeric",
-            });
+          // Handle "DD MMM YYYY" format (already formatted)
+          if (/^\d{1,2}\s+\w{3}\s+\d{4}$/.test(dateStr)) {
+            return dateStr;
+          }
           return dateStr;
         } catch {
           return dateStr;
@@ -199,10 +246,20 @@
 
       function renderTable() {
         tableBody.innerHTML = "";
-        expenses.forEach((exp, index) => {
+        
+        // Sort expenses by date (LIFO - newest first)
+        const sortedExpenses = expenses
+          .map((exp, index) => ({ exp, originalIndex: index }))
+          .sort((a, b) => {
+            const dateA = parseDate(a.exp.date);
+            const dateB = parseDate(b.exp.date);
+            return dateB - dateA; // Descending order (newest first)
+          });
+
+        sortedExpenses.forEach(({ exp, originalIndex }) => {
           const row = document.createElement("tr");
           row.innerHTML = `
-            <td>${formatDate(exp.date)}</td>
+            <td>${formatDateForDisplay(exp.date)}</td>
             <td>${exp.merchant}</td>
             <td>₹${exp.total}</td>
             <td>₹${exp.advance}</td>
@@ -214,17 +271,50 @@
               </span>
             </td>
             <td>
-              <button class="btn btn-danger btn-sm me-1" onclick="deleteExpense(${index})">Delete</button>
+              <button class="btn btn-danger btn-sm me-1" onclick="deleteExpense(${originalIndex})">Delete</button>
               ${
                 exp.status === "Pending"
-                  ? `<button class="btn btn-success btn-sm" onclick="markPaid(${index})">Paid</button>`
-                  : `<button class="btn btn-secondary btn-sm" onclick="undoPaid(${index})">Undo</button>`
+                  ? `<button class="btn btn-success btn-sm" onclick="markPaid(${originalIndex})">Paid</button>`
+                  : `<button class="btn btn-secondary btn-sm" onclick="undoPaid(${originalIndex})">Undo</button>`
               }
             </td>
           `;
           tableBody.appendChild(row);
         });
         updateTotals();
+      }
+
+      // Helper function to parse date strings back to Date objects for sorting
+      function parseDate(dateStr) {
+        if (!dateStr) return new Date(0);
+        try {
+          // Handle ISO format (YYYY-MM-DD) - preferred format
+          if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+            return new Date(dateStr + 'T00:00:00');
+          }
+          // Handle old "DD-MM-YYYY" format (like "17-10-2025")
+          if (/^\d{2}-\d{2}-\d{4}$/.test(dateStr)) {
+            const [day, month, year] = dateStr.split("-");
+            return new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T00:00:00`);
+          }
+          // Handle "DD MMM YYYY" format (e.g., "25 Oct 2025")
+          if (/^\d{1,2}\s+\w{3}\s+\d{4}$/.test(dateStr)) {
+            const parts = dateStr.split(' ');
+            const day = parts[0].padStart(2, '0');
+            const monthMap = {
+              'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
+              'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
+              'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+            };
+            const month = monthMap[parts[1]];
+            const year = parts[2];
+            return new Date(`${year}-${month}-${day}T00:00:00`);
+          }
+          // Fallback to standard parsing
+          return new Date(dateStr);
+        } catch {
+          return new Date(0);
+        }
       }
 
       form.addEventListener("submit", function (e) {
@@ -242,7 +332,7 @@
         }
 
         const remaining = total - advance;
-        const date = formatDate(dateInput);
+        const date = dateInput; // Store in ISO format (YYYY-MM-DD)
 
         const newExpense = {
           date,
