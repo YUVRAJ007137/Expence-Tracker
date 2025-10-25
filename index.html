@@ -59,7 +59,7 @@
       <div class="col-md-4 col-sm-12">
         <div class="summary-card p-3">
           <h5 class="text-primary fw-bold">एकूण खर्च / Total:</h5>
-          <h3 id="totalAmount" class="fw-bold">₹0</h3>
+          <h3 id="totalOverall" class="fw-bold">₹0</h3>
         </div>
       </div>
       <div class="col-md-4 col-sm-12">
@@ -77,17 +77,17 @@
     </div>
 
     <!-- Form -->
-    <div class="card p-4 mb-4">
+    <form id="expenseForm" class="card p-4 mb-4">
       <h4 class="mb-3 text-secondary">नवीन खर्च जोडा / Add New Expense</h4>
       <div class="row g-3">
         <div class="col-md-4">
           <label class="form-label">व्यापारी / Merchant Name</label>
-          <input type="text" id="merchant" class="form-control" placeholder="Enter merchant name" />
+          <input type="text" id="merchant" class="form-control" placeholder="Enter merchant name" required />
         </div>
 
         <div class="col-md-4">
           <label class="form-label">तारीख / Date</label>
-          <input type="date" id="date" class="form-control" />
+          <input type="date" id="date" class="form-control" required />
         </div>
 
         <div class="col-md-4">
@@ -97,7 +97,7 @@
 
         <div class="col-md-4">
           <label class="form-label">एकूण रक्कम / Total Amount (₹)</label>
-          <input type="number" id="total" class="form-control" placeholder="0" />
+          <input type="number" id="total" class="form-control" placeholder="0" required />
         </div>
 
         <div class="col-md-4">
@@ -110,10 +110,10 @@
         </div>
 
         <div class="col-md-12">
-          <button id="addExpense" class="btn btn-primary mt-3 w-100">खर्च जोडा / Add Expense</button>
+          <button type="submit" class="btn btn-primary mt-3 w-100">खर्च जोडा / Add Expense</button>
         </div>
       </div>
-    </div>
+    </form>
 
     <!-- Table -->
     <div class="card p-3">
@@ -132,106 +132,135 @@
               <th>क्रिया / Action</th>
             </tr>
           </thead>
-          <tbody id="expenseTable"></tbody>
+          <tbody id="expenseTableBody"></tbody>
         </table>
       </div>
     </div>
   </div>
 
   <script>
-    const merchant = document.getElementById("merchant");
-    const advance = document.getElementById("advance");
-    const total = document.getElementById("total");
-    const mode = document.getElementById("mode");
-    const dateInput = document.getElementById("date");
-    const addExpenseBtn = document.getElementById("addExpense");
-    const expenseTable = document.getElementById("expenseTable");
-    const totalPaidEl = document.getElementById("totalPaid");
-    const totalPendingEl = document.getElementById("totalPending");
-    const totalAmountEl = document.getElementById("totalAmount");
+    document.addEventListener("DOMContentLoaded", function () {
+      const form = document.getElementById("expenseForm");
+      const tableBody = document.getElementById("expenseTableBody");
+      const totalPaidEl = document.getElementById("totalPaid");
+      const totalPendingEl = document.getElementById("totalPending");
+      const totalOverallEl = document.getElementById("totalOverall");
 
-    let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+      let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
 
-    function renderTable() {
-      expenseTable.innerHTML = "";
-      let totalPaid = 0;
-      let totalPending = 0;
-
-      expenses.forEach((exp, index) => {
-        const remaining = exp.total - exp.advance;
-
-        // ✅ Correct logic for calculations
-        if (exp.paid) {
-          totalPaid += exp.total;
-        } else {
-          totalPaid += exp.advance;
-          totalPending += remaining;
-        }
-
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${exp.date}</td>
-          <td>${exp.merchant}</td>
-          <td>₹${exp.total}</td>
-          <td>₹${exp.advance}</td>
-          <td>₹${remaining}</td>
-          <td>${exp.mode}</td>
-          <td>
-            <span class="badge ${exp.paid ? "bg-success" : "bg-warning text-dark"}">
-              ${exp.paid ? "Paid" : "Pending"}
-            </span>
-          </td>
-          <td>
-            <button class="btn btn-danger btn-sm" onclick="deleteExpense(${index})">Delete</button>
-            <button class="btn ${exp.paid ? "btn-secondary" : "btn-success"} btn-sm" onclick="togglePaid(${index})">
-              ${exp.paid ? "Undo" : "Paid"}
-            </button>
-          </td>
-        `;
-        expenseTable.appendChild(row);
-      });
-
-      const totalAll = totalPaid + totalPending;
-      totalPaidEl.textContent = `₹${totalPaid}`;
-      totalPendingEl.textContent = `₹${totalPending}`;
-      totalAmountEl.textContent = `₹${totalAll}`;
-      localStorage.setItem("expenses", JSON.stringify(expenses));
-    }
-
-    function deleteExpense(index) {
-      expenses.splice(index, 1);
-      renderTable();
-    }
-
-    function togglePaid(index) {
-      expenses[index].paid = !expenses[index].paid;
-      renderTable();
-    }
-
-    addExpenseBtn.addEventListener("click", () => {
-      if (!merchant.value || !total.value || !dateInput.value) {
-        alert("Please fill all required fields");
-        return;
+      function formatDate(dateStr) {
+        if (!dateStr) return "";
+        const [year, month, day] = dateStr.split("-");
+        return `${day}-${month}-${year}`;
       }
 
-      const newExpense = {
-        merchant: merchant.value,
-        date: dateInput.value,
-        advance: parseFloat(advance.value) || 0,
-        total: parseFloat(total.value),
-        mode: mode.value,
-        paid: false,
+      function saveData() {
+        localStorage.setItem("expenses", JSON.stringify(expenses));
+      }
+
+      function updateTotals() {
+        let totalPaid = 0;
+        let totalPending = 0;
+
+        expenses.forEach((exp) => {
+          if (exp.status === "Paid") {
+            totalPaid += exp.total;
+          } else {
+            totalPending += exp.remaining;
+          }
+        });
+
+        const totalOverall = totalPaid + totalPending;
+        totalPaidEl.textContent = `₹${totalPaid}`;
+        totalPendingEl.textContent = `₹${totalPending}`;
+        totalOverallEl.textContent = `₹${totalOverall}`;
+      }
+
+      function renderTable() {
+        tableBody.innerHTML = "";
+        expenses.forEach((exp, index) => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${exp.date}</td>
+            <td>${exp.merchant}</td>
+            <td>₹${exp.total}</td>
+            <td>₹${exp.advance}</td>
+            <td>₹${exp.remaining}</td>
+            <td>${exp.mode}</td>
+            <td>
+              <span class="badge ${exp.status === "Paid" ? "bg-success" : "bg-warning text-dark"}">
+                ${exp.status}
+              </span>
+            </td>
+            <td>
+              <button class="btn btn-danger btn-sm me-1" onclick="deleteExpense(${index})">Delete</button>
+              ${
+                exp.status === "Pending"
+                  ? `<button class="btn btn-success btn-sm" onclick="markPaid(${index})">Paid</button>`
+                  : `<button class="btn btn-secondary btn-sm" onclick="undoPaid(${index})">Undo</button>`
+              }
+            </td>
+          `;
+          tableBody.appendChild(row);
+        });
+        updateTotals();
+      }
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+
+        const dateInput = document.getElementById("date").value;
+        const merchant = document.getElementById("merchant").value.trim();
+        const total = parseFloat(document.getElementById("total").value) || 0;
+        const advance = parseFloat(document.getElementById("advance").value) || 0;
+        const mode = document.getElementById("mode").value;
+
+        if (!merchant || !total) {
+          alert("Please fill in all required fields.");
+          return;
+        }
+
+        const remaining = total - advance;
+        const date = formatDate(dateInput);
+
+        const newExpense = {
+          date,
+          merchant,
+          total,
+          advance,
+          remaining,
+          mode,
+          status: "Pending",
+        };
+
+        expenses.push(newExpense);
+        saveData();
+        renderTable();
+        form.reset();
+      });
+
+      window.deleteExpense = function (index) {
+        if (confirm("Delete this expense?")) {
+          expenses.splice(index, 1);
+          saveData();
+          renderTable();
+        }
       };
 
-      expenses.push(newExpense);
-      merchant.value = "";
-      advance.value = "";
-      total.value = "";
-      dateInput.value = "";
+      window.markPaid = function (index) {
+        expenses[index].status = "Paid";
+        saveData();
+        renderTable();
+      };
+
+      window.undoPaid = function (index) {
+        expenses[index].status = "Pending";
+        saveData();
+        renderTable();
+      };
+
       renderTable();
     });
-
-    renderTable();
   </script>
 </body>
 </html>
