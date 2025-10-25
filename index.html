@@ -148,31 +148,20 @@
 
       let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
 
-      // ✅ Improved date formatter (handles old formats too)
       function formatDate(dateStr) {
         if (!dateStr) return "";
-        try {
-          // handle old "DD-MM-YYYY"
-          if (/^\d{2}-\d{2}-\d{4}$/.test(dateStr)) {
-            const [day, month, year] = dateStr.split("-");
-            return new Date(`${year}-${month}-${day}`).toLocaleDateString("en-GB", {
-              day: "2-digit",
-              month: "short",
-              year: "numeric",
-            });
-          }
-          // handle standard yyyy-mm-dd
-          const date = new Date(dateStr);
-          if (!isNaN(date))
-            return date.toLocaleDateString("en-GB", {
-              day: "2-digit",
-              month: "short",
-              year: "numeric",
-            });
-          return dateStr;
-        } catch {
-          return dateStr;
+        if (dateStr.includes("-")) {
+          const [year, month, day] = dateStr.split("-");
+          return `${day}-${month}-${year}`;
+        } else if (dateStr.includes("/")) {
+          const parts = dateStr.split("/");
+          if (parts[0].length === 4) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+          else return `${parts[1]}-${parts[0]}-${parts[2]}`;
+        } else if (dateStr.includes("T")) {
+          const d = new Date(dateStr);
+          return d.toLocaleDateString("en-GB");
         }
+        return dateStr;
       }
 
       function saveData() {
@@ -199,7 +188,11 @@
 
       function renderTable() {
         tableBody.innerHTML = "";
-        expenses.forEach((exp, index) => {
+        // 🟢 Show newer entries first
+        const reversedExpenses = [...expenses].reverse();
+
+        reversedExpenses.forEach((exp, revIndex) => {
+          const index = expenses.length - 1 - revIndex;
           const row = document.createElement("tr");
           row.innerHTML = `
             <td>${formatDate(exp.date)}</td>
