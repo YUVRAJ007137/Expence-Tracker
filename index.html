@@ -10,105 +10,126 @@
   />
   <style>
     body {
-      background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
-      font-family: 'Poppins', sans-serif;
-      padding: 20px;
+      background: linear-gradient(135deg, #f8f9fa, #e0e7ff);
+      min-height: 100vh;
+      font-family: "Poppins", sans-serif;
     }
+
     .card {
-      border-radius: 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      border: none;
+      border-radius: 20px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
     }
-    .summary-box {
-      border-radius: 12px;
-      padding: 15px;
-      text-align: center;
-      color: #fff;
+
+    .summary-card {
+      background: #fff;
+      border-radius: 15px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      transition: transform 0.2s ease;
     }
-    .bg-paid { background-color: #28a745; }
-    .bg-pending { background-color: #ffc107; color: #000; }
-    .bg-total { background-color: #0d6efd; }
-    table th, table td {
-      vertical-align: middle;
+
+    .summary-card:hover {
+      transform: scale(1.03);
     }
+
+    table thead {
+      background-color: #6f42c1;
+      color: white;
+    }
+
+    .btn {
+      border-radius: 10px;
+    }
+
     @media (max-width: 768px) {
-      .form-group {
-        margin-bottom: 1rem;
+      .form-label {
+        font-size: 0.9rem;
       }
     }
   </style>
 </head>
-<body>
-
+<body class="p-3">
   <div class="container my-4">
-    <h2 class="text-center mb-4 fw-bold">खर्च व्यवस्थापन प्रणाली | Expense Tracker</h2>
+    <h2 class="text-center mb-4 text-primary fw-bold">
+      खर्च व्यवस्थापन प्रणाली | Expense Tracker
+    </h2>
 
-    <div class="row g-3 text-center mb-4">
-      <div class="col-md-4">
-        <div class="summary-box bg-total">
-          <h5>Total Amount</h5>
-          <h3 id="totalOverall">0</h3>
+    <!-- Summary -->
+    <div class="row mb-4 text-center g-3">
+      <div class="col-md-4 col-sm-12">
+        <div class="summary-card p-3">
+          <h5 class="text-primary fw-bold">एकूण खर्च / Total:</h5>
+          <h3 id="totalOverall" class="fw-bold">₹0</h3>
         </div>
       </div>
-      <div class="col-md-4">
-        <div class="summary-box bg-paid">
-          <h5>Total Paid</h5>
-          <h3 id="totalPaid">0</h3>
+      <div class="col-md-4 col-sm-12">
+        <div class="summary-card p-3">
+          <h5 class="text-success fw-bold">भरलेले / Paid:</h5>
+          <h3 id="totalPaid" class="fw-bold">₹0</h3>
         </div>
       </div>
-      <div class="col-md-4">
-        <div class="summary-box bg-pending">
-          <h5>Total Pending</h5>
-          <h3 id="totalPending">0</h3>
+      <div class="col-md-4 col-sm-12">
+        <div class="summary-card p-3">
+          <h5 class="text-danger fw-bold">बाकी / Pending:</h5>
+          <h3 id="totalPending" class="fw-bold">₹0</h3>
         </div>
       </div>
     </div>
 
-    <div class="card p-4 mb-4">
-      <h4 class="mb-3">Add New Expense</h4>
-      <form id="expenseForm" class="row g-3">
+    <!-- Form -->
+    <form id="expenseForm" class="card p-4 mb-4">
+      <h4 class="mb-3 text-secondary">नवीन खर्च जोडा / Add New Expense</h4>
+      <div class="row g-3">
         <div class="col-md-4">
-          <label class="form-label">Merchant / Receiver Name (नाव)</label>
-          <input type="text" id="name" class="form-control" required />
+          <label class="form-label">व्यापारी / Merchant Name</label>
+          <input type="text" id="merchant" class="form-control" placeholder="Enter merchant name" required />
         </div>
+
         <div class="col-md-4">
-          <label class="form-label">Date (तारीख)</label>
-          <input type="datetime-local" id="date" class="form-control" required />
+          <label class="form-label">तारीख / Date</label>
+          <input type="date" id="date" class="form-control" required />
         </div>
+
         <div class="col-md-4">
-          <label class="form-label">Total Amount (एकूण रक्कम)</label>
-          <input type="number" id="total" class="form-control" required />
+          <label class="form-label">अ‍ॅडव्हान्स रक्कम / Advance Paid (₹)</label>
+          <input type="number" id="advance" class="form-control" placeholder="0" />
         </div>
+
         <div class="col-md-4">
-          <label class="form-label">Advance Paid (अग्रिम रक्कम)</label>
-          <input type="number" id="advance" class="form-control" value="0" />
+          <label class="form-label">एकूण रक्कम / Total Amount (₹)</label>
+          <input type="number" id="total" class="form-control" placeholder="0" required />
         </div>
+
         <div class="col-md-4">
-          <label class="form-label">Payment Method (पेमेंट पद्धत)</label>
-          <select id="method" class="form-select" required>
+          <label class="form-label">पेमेंट प्रकार / Payment Mode</label>
+          <select id="mode" class="form-select">
             <option value="Cash">Cash</option>
             <option value="UPI">UPI</option>
+            <option value="Card">Card</option>
           </select>
         </div>
-        <div class="col-md-4 d-flex align-items-end">
-          <button class="btn btn-primary w-100" type="submit">Add Expense</button>
-        </div>
-      </form>
-    </div>
 
+        <div class="col-md-12">
+          <button type="submit" class="btn btn-primary mt-3 w-100">खर्च जोडा / Add Expense</button>
+        </div>
+      </div>
+    </form>
+
+    <!-- Table -->
     <div class="card p-3">
-      <h4 class="mb-3">Expense Records</h4>
+      <h4 class="mb-3 text-secondary">सर्व खर्च / All Expenses</h4>
       <div class="table-responsive">
-        <table class="table table-bordered table-striped align-middle">
-          <thead class="table-dark">
+        <table class="table table-striped table-hover align-middle text-center">
+          <thead>
             <tr>
-              <th>Name</th>
-              <th>Date</th>
-              <th>Total</th>
-              <th>Advance</th>
-              <th>Remaining</th>
-              <th>Method</th>
-              <th>Status</th>
-              <th>Action</th>
+              <th>तारीख / Date</th>
+              <th>व्यापारी / Merchant</th>
+              <th>एकूण / Total</th>
+              <th>अ‍ॅडव्हान्स / Advance</th>
+              <th>बाकी / Remaining</th>
+              <th>प्रकार / Mode</th>
+              <th>स्थिती / Status</th>
+              <th>क्रिया / Action</th>
             </tr>
           </thead>
           <tbody id="expenseTableBody"></tbody>
@@ -118,7 +139,7 @@
   </div>
 
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
+    document.addEventListener("DOMContentLoaded", function () {
       const form = document.getElementById("expenseForm");
       const tableBody = document.getElementById("expenseTableBody");
       const totalPaidEl = document.getElementById("totalPaid");
@@ -127,106 +148,140 @@
 
       let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
 
+      // ✅ Improved date formatter (handles old formats too)
       function formatDate(dateStr) {
         if (!dateStr) return "";
         try {
+          // handle old "DD-MM-YYYY"
+          if (/^\d{2}-\d{2}-\d{4}$/.test(dateStr)) {
+            const [day, month, year] = dateStr.split("-");
+            return new Date(`${year}-${month}-${day}`).toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            });
+          }
+          // handle standard yyyy-mm-dd
           const date = new Date(dateStr);
-          if (isNaN(date)) return dateStr; // fallback if invalid
-          return date.toLocaleString("en-GB", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true,
-          });
+          if (!isNaN(date))
+            return date.toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            });
+          return dateStr;
         } catch {
           return dateStr;
         }
       }
 
-      function renderExpenses() {
-        tableBody.innerHTML = "";
+      function saveData() {
+        localStorage.setItem("expenses", JSON.stringify(expenses));
+      }
+
+      function updateTotals() {
         let totalPaid = 0;
         let totalPending = 0;
 
-        expenses.forEach((exp, index) => {
-          const remaining = exp.total - exp.advance;
-          if (exp.status === "paid") totalPaid += Number(exp.total);
-          else {
-            totalPaid += Number(exp.advance);
-            totalPending += remaining;
+        expenses.forEach((exp) => {
+          if (exp.status === "Paid") {
+            totalPaid += exp.total;
+          } else {
+            totalPending += exp.remaining;
           }
+        });
 
+        const totalOverall = totalPaid + totalPending;
+        totalPaidEl.textContent = `₹${totalPaid}`;
+        totalPendingEl.textContent = `₹${totalPending}`;
+        totalOverallEl.textContent = `₹${totalOverall}`;
+      }
+
+      function renderTable() {
+        tableBody.innerHTML = "";
+        expenses.forEach((exp, index) => {
           const row = document.createElement("tr");
           row.innerHTML = `
-            <td>${exp.name}</td>
             <td>${formatDate(exp.date)}</td>
-            <td>${exp.total}</td>
-            <td>${exp.advance}</td>
-            <td>${remaining}</td>
-            <td>${exp.method}</td>
-            <td>${exp.status === "paid" ? "✅ Paid" : "⏳ Pending"}</td>
+            <td>${exp.merchant}</td>
+            <td>₹${exp.total}</td>
+            <td>₹${exp.advance}</td>
+            <td>₹${exp.remaining}</td>
+            <td>${exp.mode}</td>
             <td>
-              <button class="btn btn-danger btn-sm" onclick="deleteExpense(${index})">Delete</button>
+              <span class="badge ${exp.status === "Paid" ? "bg-success" : "bg-warning text-dark"}">
+                ${exp.status}
+              </span>
+            </td>
+            <td>
+              <button class="btn btn-danger btn-sm me-1" onclick="deleteExpense(${index})">Delete</button>
               ${
-                exp.status === "paid"
-                  ? `<button class="btn btn-warning btn-sm" onclick="undoPaid(${index})">Undo</button>`
-                  : `<button class="btn btn-success btn-sm" onclick="markPaid(${index})">Mark Paid</button>`
+                exp.status === "Pending"
+                  ? `<button class="btn btn-success btn-sm" onclick="markPaid(${index})">Paid</button>`
+                  : `<button class="btn btn-secondary btn-sm" onclick="undoPaid(${index})">Undo</button>`
               }
             </td>
           `;
           tableBody.appendChild(row);
         });
-
-        totalPaidEl.textContent = totalPaid.toFixed(2);
-        totalPendingEl.textContent = totalPending.toFixed(2);
-        totalOverallEl.textContent = (totalPaid + totalPending).toFixed(2);
-
-        localStorage.setItem("expenses", JSON.stringify(expenses));
+        updateTotals();
       }
 
-      window.deleteExpense = (index) => {
-        expenses.splice(index, 1);
-        renderExpenses();
-      };
-
-      window.markPaid = (index) => {
-        expenses[index].status = "paid";
-        renderExpenses();
-      };
-
-      window.undoPaid = (index) => {
-        expenses[index].status = "pending";
-        renderExpenses();
-      };
-
-      form.addEventListener("submit", (e) => {
+      form.addEventListener("submit", function (e) {
         e.preventDefault();
-        const name = document.getElementById("name").value.trim();
-        const date = document.getElementById("date").value;
-        const total = parseFloat(document.getElementById("total").value);
-        const advance = parseFloat(document.getElementById("advance").value);
-        const method = document.getElementById("method").value;
 
-        if (!name || !total || isNaN(total)) return alert("Please enter valid details");
+        const dateInput = document.getElementById("date").value;
+        const merchant = document.getElementById("merchant").value.trim();
+        const total = parseFloat(document.getElementById("total").value) || 0;
+        const advance = parseFloat(document.getElementById("advance").value) || 0;
+        const mode = document.getElementById("mode").value;
 
-        expenses.push({
-          name,
+        if (!merchant || !total) {
+          alert("Please fill in all required fields.");
+          return;
+        }
+
+        const remaining = total - advance;
+        const date = formatDate(dateInput);
+
+        const newExpense = {
           date,
+          merchant,
           total,
-          advance: advance || 0,
-          method,
-          status: "pending",
-        });
+          advance,
+          remaining,
+          mode,
+          status: "Pending",
+        };
 
+        expenses.push(newExpense);
+        saveData();
+        renderTable();
         form.reset();
-        renderExpenses();
       });
 
-      renderExpenses();
+      window.deleteExpense = function (index) {
+        if (confirm("Delete this expense?")) {
+          expenses.splice(index, 1);
+          saveData();
+          renderTable();
+        }
+      };
+
+      window.markPaid = function (index) {
+        expenses[index].status = "Paid";
+        saveData();
+        renderTable();
+      };
+
+      window.undoPaid = function (index) {
+        expenses[index].status = "Pending";
+        saveData();
+        renderTable();
+      };
+
+      renderTable();
     });
   </script>
-
 </body>
 </html>
