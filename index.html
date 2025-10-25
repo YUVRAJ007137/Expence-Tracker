@@ -8,370 +8,690 @@
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
     rel="stylesheet"
   />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
-    body {
-      background: linear-gradient(135deg, #f8f9fa, #e0e7ff);
-      min-height: 100vh;
-      font-family: "Poppins", sans-serif;
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    .card {
-      border: none;
-      border-radius: 20px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding-bottom: 80px;
+    }
+
+    .header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 20px 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #667eea;
+      margin: 0;
+      text-align: center;
+    }
+
+    .header .subtitle {
+      font-size: 13px;
+      color: #666;
+      text-align: center;
+      margin-top: 4px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
     }
 
     .summary-card {
-      background: #fff;
-      border-radius: 15px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-      transition: transform 0.2s ease;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 16px 12px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      transition: transform 0.2s;
     }
 
-    .summary-card:hover {
-      transform: scale(1.03);
+    .summary-card:active {
+      transform: scale(0.95);
     }
 
-    table thead {
-      background-color: #6f42c1;
+    .summary-card .icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .summary-card.total .icon { color: #667eea; }
+    .summary-card.paid .icon { color: #10b981; }
+    .summary-card.pending .icon { color: #f59e0b; }
+
+    .summary-card .label {
+      font-size: 11px;
+      color: #666;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .summary-card .amount {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    .fab-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #10b981, #059669);
+      border: none;
+      box-shadow: 0 8px 32px rgba(16, 185, 129, 0.5), 0 0 0 4px rgba(255, 255, 255, 0.3);
       color: white;
+      font-size: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 1000;
+      transition: all 0.2s;
     }
 
-    .btn {
-      border-radius: 10px;
+    .fab-button:active {
+      transform: scale(0.9);
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4), 0 0 0 4px rgba(255, 255, 255, 0.3);
     }
 
-    @media (max-width: 768px) {
-      .form-label {
-        font-size: 0.9rem;
-      }
+    .expense-list {
+      padding: 0 16px 20px;
+    }
+
+    .expense-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      position: relative;
+    }
+
+    .expense-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .expense-merchant {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1f2937;
+      flex: 1;
+      margin-right: 12px;
+    }
+
+    .expense-date {
+      font-size: 12px;
+      color: #6b7280;
+      white-space: nowrap;
+    }
+
+    .expense-amounts {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .amount-item {
+      text-align: center;
+    }
+
+    .amount-item .label {
+      font-size: 10px;
+      color: #9ca3af;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .amount-item .value {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    .expense-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 12px;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .status-badge {
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .status-badge.paid {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .status-badge.pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .expense-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .action-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .action-btn:active {
+      transform: scale(0.9);
+    }
+
+    .action-btn.delete {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    .action-btn.paid {
+      background: #d1fae5;
+      color: #059669;
+    }
+
+    .action-btn.undo {
+      background: #e0e7ff;
+      color: #4f46e5;
+    }
+
+    .payment-mode {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      color: #6b7280;
+      padding: 4px 8px;
+      background: #f3f4f6;
+      border-radius: 12px;
+      margin-right: 8px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+      align-items: flex-end;
+      animation: fadeIn 0.2s;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .modal-content {
+      background: white;
+      width: 100%;
+      border-radius: 24px 24px 0 0;
+      padding: 24px;
+      animation: slideUp 0.3s;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    .close-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      background: #f3f4f6;
+      color: #6b7280;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .form-control, .form-select {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      font-size: 15px;
+      transition: border-color 0.2s;
+    }
+
+    .form-control:focus, .form-select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .submit-btn:active {
+      transform: scale(0.98);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .empty-state i {
+      font-size: 64px;
+      margin-bottom: 16px;
+      opacity: 0.6;
+    }
+
+    .empty-state h3 {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+
+    .empty-state p {
+      font-size: 14px;
+      opacity: 0.8;
     }
   </style>
 </head>
-<body class="p-3">
-  <div class="container my-4">
-    <h2 class="text-center mb-4 text-primary fw-bold">
-      खर्च व्यवस्थापन प्रणाली | Expense Tracker
-    </h2>
+<body>
+  <div class="header">
+    <h1>खर्च व्यवस्थापन</h1>
+    <div class="subtitle">Expense Tracker</div>
+  </div>
 
-    <!-- Summary -->
-    <div class="row mb-4 text-center g-3">
-      <div class="col-md-4 col-sm-12">
-        <div class="summary-card p-3">
-          <h5 class="text-primary fw-bold">एकूण खर्च / Total:</h5>
-          <h3 id="totalOverall" class="fw-bold">₹0</h3>
-        </div>
-      </div>
-      <div class="col-md-4 col-sm-12">
-        <div class="summary-card p-3">
-          <h5 class="text-success fw-bold">भरलेले / Paid:</h5>
-          <h3 id="totalPaid" class="fw-bold">₹0</h3>
-        </div>
-      </div>
-      <div class="col-md-4 col-sm-12">
-        <div class="summary-card p-3">
-          <h5 class="text-danger fw-bold">बाकी / Pending:</h5>
-          <h3 id="totalPending" class="fw-bold">₹0</h3>
-        </div>
-      </div>
+  <div class="summary-grid">
+    <div class="summary-card total">
+      <div class="icon"><i class="fas fa-wallet"></i></div>
+      <div class="label">Total</div>
+      <div class="amount" id="totalOverall">₹0</div>
     </div>
+    <div class="summary-card paid">
+      <div class="icon"><i class="fas fa-check-circle"></i></div>
+      <div class="label">Paid</div>
+      <div class="amount" id="totalPaid">₹0</div>
+    </div>
+    <div class="summary-card pending">
+      <div class="icon"><i class="fas fa-clock"></i></div>
+      <div class="label">Pending</div>
+      <div class="amount" id="totalPending">₹0</div>
+    </div>
+  </div>
 
-    <!-- Form -->
-    <form id="expenseForm" class="card p-4 mb-4">
-      <h4 class="mb-3 text-secondary">नवीन खर्च जोडा / Add New Expense</h4>
-      <div class="row g-3">
-        <div class="col-md-4">
+  <div class="expense-list" id="expenseList"></div>
+
+  <button class="fab-button" onclick="openModal()">
+    <i class="fas fa-plus"></i>
+  </button>
+
+  <div class="modal" id="expenseModal" onclick="closeModalOnBackdrop(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <div class="modal-header">
+        <div class="modal-title">नवीन खर्च जोडा</div>
+        <button class="close-btn" onclick="closeModal()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form id="expenseForm">
+        <div class="form-group">
           <label class="form-label">व्यापारी / Merchant Name</label>
           <input type="text" id="merchant" class="form-control" placeholder="Enter merchant name" required />
         </div>
 
-        <div class="col-md-4">
+        <div class="form-group">
           <label class="form-label">तारीख / Date</label>
           <input type="date" id="date" class="form-control" required />
         </div>
 
-        <div class="col-md-4">
-          <label class="form-label">अ‍ॅडव्हान्स रक्कम / Advance Paid (₹)</label>
-          <input type="number" id="advance" class="form-control" placeholder="0" />
-        </div>
-
-        <div class="col-md-4">
+        <div class="form-group">
           <label class="form-label">एकूण रक्कम / Total Amount (₹)</label>
           <input type="number" id="total" class="form-control" placeholder="0" required />
         </div>
 
-        <div class="col-md-4">
+        <div class="form-group">
+          <label class="form-label">अ‍ॅडव्हान्स रक्कम / Advance Paid (₹)</label>
+          <input type="number" id="advance" class="form-control" placeholder="0" />
+        </div>
+
+        <div class="form-group">
           <label class="form-label">पेमेंट प्रकार / Payment Mode</label>
           <select id="mode" class="form-select">
-            <option value="Cash">Cash</option>
-            <option value="UPI">UPI</option>
-            <option value="Card">Card</option>
+            <option value="Cash">💵 Cash</option>
+            <option value="UPI">📱 UPI</option>
+            <option value="Card">💳 Card</option>
           </select>
         </div>
 
-        <div class="col-md-12">
-          <button type="submit" class="btn btn-primary mt-3 w-100">खर्च जोडा / Add Expense</button>
-        </div>
-      </div>
-    </form>
-
-    <!-- Table -->
-    <div class="card p-3">
-      <h4 class="mb-3 text-secondary">सर्व खर्च / All Expenses</h4>
-      <div class="table-responsive">
-        <table class="table table-striped table-hover align-middle text-center">
-          <thead>
-            <tr>
-              <th>तारीख / Date</th>
-              <th>व्यापारी / Merchant</th>
-              <th>एकूण / Total</th>
-              <th>अ‍ॅडव्हान्स / Advance</th>
-              <th>बाकी / Remaining</th>
-              <th>प्रकार / Mode</th>
-              <th>स्थिती / Status</th>
-              <th>क्रिया / Action</th>
-            </tr>
-          </thead>
-          <tbody id="expenseTableBody"></tbody>
-        </table>
-      </div>
+        <button type="submit" class="submit-btn">
+          <i class="fas fa-plus-circle"></i> खर्च जोडा / Add Expense
+        </button>
+      </form>
     </div>
   </div>
 
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const form = document.getElementById("expenseForm");
-      const tableBody = document.getElementById("expenseTableBody");
-      const totalPaidEl = document.getElementById("totalPaid");
-      const totalPendingEl = document.getElementById("totalPending");
-      const totalOverallEl = document.getElementById("totalOverall");
+    const expenseList = document.getElementById("expenseList");
+    const totalPaidEl = document.getElementById("totalPaid");
+    const totalPendingEl = document.getElementById("totalPending");
+    const totalOverallEl = document.getElementById("totalOverall");
+    const modal = document.getElementById("expenseModal");
+    const form = document.getElementById("expenseForm");
 
-      let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+    let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
 
-      // Migrate old date formats to ISO format (YYYY-MM-DD)
-      function migrateDates() {
-        let needsSave = false;
-        expenses = expenses.map(exp => {
-          // If date is already in ISO format, skip
-          if (/^\d{4}-\d{2}-\d{2}$/.test(exp.date)) {
-            return exp;
-          }
-          
-          needsSave = true;
-          let isoDate = exp.date;
-          
-          // Convert "DD MMM YYYY" to ISO
-          if (/^\d{1,2}\s+\w{3}\s+\d{4}$/.test(exp.date)) {
-            const parts = exp.date.split(' ');
-            const day = parts[0].padStart(2, '0');
-            const monthMap = {
-              'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
-              'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
-              'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
-            };
-            const month = monthMap[parts[1]];
-            const year = parts[2];
-            isoDate = `${year}-${month}-${day}`;
-          }
-          // Convert "DD-MM-YYYY" to ISO
-          else if (/^\d{2}-\d{2}-\d{4}$/.test(exp.date)) {
-            const [day, month, year] = exp.date.split("-");
-            isoDate = `${year}-${month}-${day}`;
-          }
-          
-          return { ...exp, date: isoDate };
-        });
+    function migrateDates() {
+      let needsSave = false;
+      expenses = expenses.map(exp => {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(exp.date)) {
+          return exp;
+        }
         
-        if (needsSave) {
-          saveData();
-          console.log("Migrated dates to ISO format");
-        }
-      }
-
-      migrateDates();
-
-      // Format date for display only
-      function formatDateForDisplay(dateStr) {
-        if (!dateStr) return "";
-        try {
-          // Handle ISO format (YYYY-MM-DD)
-          if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-            const date = new Date(dateStr + 'T00:00:00');
-            return date.toLocaleDateString("en-GB", {
-              day: "2-digit",
-              month: "short",
-              year: "numeric",
-            });
-          }
-          // Handle old "DD-MM-YYYY" format
-          if (/^\d{2}-\d{2}-\d{4}$/.test(dateStr)) {
-            const [day, month, year] = dateStr.split("-");
-            return new Date(`${year}-${month}-${day}`).toLocaleDateString("en-GB", {
-              day: "2-digit",
-              month: "short",
-              year: "numeric",
-            });
-          }
-          // Handle "DD MMM YYYY" format (already formatted)
-          if (/^\d{1,2}\s+\w{3}\s+\d{4}$/.test(dateStr)) {
-            return dateStr;
-          }
-          return dateStr;
-        } catch {
-          return dateStr;
-        }
-      }
-
-      function saveData() {
-        localStorage.setItem("expenses", JSON.stringify(expenses));
-      }
-
-      function updateTotals() {
-        let totalPaid = 0;
-        let totalPending = 0;
-
-        expenses.forEach((exp) => {
-          if (exp.status === "Paid") {
-            totalPaid += exp.total;
-          } else {
-            totalPending += exp.remaining;
-          }
-        });
-
-        const totalOverall = totalPaid + totalPending;
-        totalPaidEl.textContent = `₹${totalPaid}`;
-        totalPendingEl.textContent = `₹${totalPending}`;
-        totalOverallEl.textContent = `₹${totalOverall}`;
-      }
-
-      function renderTable() {
-        tableBody.innerHTML = "";
+        needsSave = true;
+        let isoDate = exp.date;
         
-        // Sort expenses by date (LIFO - newest first)
-        const sortedExpenses = expenses
-          .map((exp, index) => ({ exp, originalIndex: index }))
-          .sort((a, b) => {
-            const dateA = parseDate(a.exp.date);
-            const dateB = parseDate(b.exp.date);
-            return dateB - dateA; // Descending order (newest first)
-          });
-
-        sortedExpenses.forEach(({ exp, originalIndex }) => {
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${formatDateForDisplay(exp.date)}</td>
-            <td>${exp.merchant}</td>
-            <td>₹${exp.total}</td>
-            <td>₹${exp.advance}</td>
-            <td>₹${exp.remaining}</td>
-            <td>${exp.mode}</td>
-            <td>
-              <span class="badge ${exp.status === "Paid" ? "bg-success" : "bg-warning text-dark"}">
-                ${exp.status}
-              </span>
-            </td>
-            <td>
-              <button class="btn btn-danger btn-sm me-1" onclick="deleteExpense(${originalIndex})">Delete</button>
-              ${
-                exp.status === "Pending"
-                  ? `<button class="btn btn-success btn-sm" onclick="markPaid(${originalIndex})">Paid</button>`
-                  : `<button class="btn btn-secondary btn-sm" onclick="undoPaid(${originalIndex})">Undo</button>`
-              }
-            </td>
-          `;
-          tableBody.appendChild(row);
-        });
-        updateTotals();
-      }
-
-      // Helper function to parse date strings back to Date objects for sorting
-      function parseDate(dateStr) {
-        if (!dateStr) return new Date(0);
-        try {
-          // Handle ISO format (YYYY-MM-DD) - preferred format
-          if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-            return new Date(dateStr + 'T00:00:00');
-          }
-          // Handle old "DD-MM-YYYY" format (like "17-10-2025")
-          if (/^\d{2}-\d{2}-\d{4}$/.test(dateStr)) {
-            const [day, month, year] = dateStr.split("-");
-            return new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T00:00:00`);
-          }
-          // Handle "DD MMM YYYY" format (e.g., "25 Oct 2025")
-          if (/^\d{1,2}\s+\w{3}\s+\d{4}$/.test(dateStr)) {
-            const parts = dateStr.split(' ');
-            const day = parts[0].padStart(2, '0');
-            const monthMap = {
-              'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
-              'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
-              'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
-            };
-            const month = monthMap[parts[1]];
-            const year = parts[2];
-            return new Date(`${year}-${month}-${day}T00:00:00`);
-          }
-          // Fallback to standard parsing
-          return new Date(dateStr);
-        } catch {
-          return new Date(0);
+        if (/^\d{1,2}\s+\w{3}\s+\d{4}$/.test(exp.date)) {
+          const parts = exp.date.split(' ');
+          const day = parts[0].padStart(2, '0');
+          const monthMap = {
+            'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
+            'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
+            'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
+          };
+          const month = monthMap[parts[1]];
+          const year = parts[2];
+          isoDate = `${year}-${month}-${day}`;
+        } else if (/^\d{2}-\d{2}-\d{4}$/.test(exp.date)) {
+          const [day, month, year] = exp.date.split("-");
+          isoDate = `${year}-${month}-${day}`;
         }
-      }
-
-      form.addEventListener("submit", function (e) {
-        e.preventDefault();
-
-        const dateInput = document.getElementById("date").value;
-        const merchant = document.getElementById("merchant").value.trim();
-        const total = parseFloat(document.getElementById("total").value) || 0;
-        const advance = parseFloat(document.getElementById("advance").value) || 0;
-        const mode = document.getElementById("mode").value;
-
-        if (!merchant || !total) {
-          alert("Please fill in all required fields.");
-          return;
-        }
-
-        const remaining = total - advance;
-        const date = dateInput; // Store in ISO format (YYYY-MM-DD)
-
-        const newExpense = {
-          date,
-          merchant,
-          total,
-          advance,
-          remaining,
-          mode,
-          status: "Pending",
-        };
-
-        expenses.push(newExpense);
+        
+        return { ...exp, date: isoDate };
+      });
+      
+      if (needsSave) {
         saveData();
-        renderTable();
-        form.reset();
+      }
+    }
+
+    migrateDates();
+
+    function formatDateForDisplay(dateStr) {
+      if (!dateStr) return "";
+      try {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+          const date = new Date(dateStr + 'T00:00:00');
+          return date.toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          });
+        }
+        return dateStr;
+      } catch {
+        return dateStr;
+      }
+    }
+
+    function parseDate(dateStr) {
+      if (!dateStr) return new Date(0);
+      try {
+        if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+          return new Date(dateStr + 'T00:00:00');
+        }
+        if (/^\d{2}-\d{2}-\d{4}$/.test(dateStr)) {
+          const [day, month, year] = dateStr.split("-");
+          return new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T00:00:00`);
+        }
+        return new Date(dateStr);
+      } catch {
+        return new Date(0);
+      }
+    }
+
+    function saveData() {
+      localStorage.setItem("expenses", JSON.stringify(expenses));
+    }
+
+    function updateTotals() {
+      let totalPaid = 0;
+      let totalPending = 0;
+
+      expenses.forEach((exp) => {
+        if (exp.status === "Paid") {
+          totalPaid += exp.total;
+        } else {
+          totalPending += exp.remaining;
+        }
       });
 
-      window.deleteExpense = function (index) {
-        if (confirm("Delete this expense?")) {
-          expenses.splice(index, 1);
-          saveData();
-          renderTable();
-        }
+      const totalOverall = totalPaid + totalPending;
+      totalPaidEl.textContent = `₹${totalPaid}`;
+      totalPendingEl.textContent = `₹${totalPending}`;
+      totalOverallEl.textContent = `₹${totalOverall}`;
+    }
+
+    function renderExpenses() {
+      const sortedExpenses = expenses
+        .map((exp, index) => ({ exp, originalIndex: index }))
+        .sort((a, b) => {
+          const dateA = parseDate(a.exp.date);
+          const dateB = parseDate(b.exp.date);
+          return dateB - dateA;
+        });
+
+      if (sortedExpenses.length === 0) {
+        expenseList.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-receipt"></i>
+            <h3>No expenses yet</h3>
+            <p>Tap the + button to add your first expense</p>
+          </div>
+        `;
+      } else {
+        expenseList.innerHTML = sortedExpenses.map(({ exp, originalIndex }) => {
+          const modeIcon = exp.mode === 'Cash' ? '💵' : exp.mode === 'UPI' ? '📱' : '💳';
+          return `
+            <div class="expense-card">
+              <div class="expense-header">
+                <div class="expense-merchant">${exp.merchant}</div>
+                <div class="expense-date">${formatDateForDisplay(exp.date)}</div>
+              </div>
+              <div class="expense-amounts">
+                <div class="amount-item">
+                  <div class="label">Total</div>
+                  <div class="value">₹${exp.total}</div>
+                </div>
+                <div class="amount-item">
+                  <div class="label">Advance</div>
+                  <div class="value">₹${exp.advance}</div>
+                </div>
+                <div class="amount-item">
+                  <div class="label">Remaining</div>
+                  <div class="value">₹${exp.remaining}</div>
+                </div>
+              </div>
+              <div class="expense-footer">
+                <div>
+                  <span class="payment-mode">${modeIcon} ${exp.mode}</span>
+                  <span class="status-badge ${exp.status === 'Paid' ? 'paid' : 'pending'}">
+                    ${exp.status}
+                  </span>
+                </div>
+                <div class="expense-actions">
+                  <button class="action-btn delete" onclick="deleteExpense(${originalIndex})">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                  ${exp.status === 'Pending' 
+                    ? `<button class="action-btn paid" onclick="markPaid(${originalIndex})">
+                        <i class="fas fa-check"></i>
+                      </button>`
+                    : `<button class="action-btn undo" onclick="undoPaid(${originalIndex})">
+                        <i class="fas fa-undo"></i>
+                      </button>`
+                  }
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+      updateTotals();
+    }
+
+    function openModal() {
+      modal.classList.add('active');
+      document.getElementById('date').valueAsDate = new Date();
+    }
+
+    function closeModal() {
+      modal.classList.remove('active');
+      form.reset();
+    }
+
+    function closeModalOnBackdrop(event) {
+      if (event.target === modal) {
+        closeModal();
+      }
+    }
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const dateInput = document.getElementById("date").value;
+      const merchant = document.getElementById("merchant").value.trim();
+      const total = parseFloat(document.getElementById("total").value) || 0;
+      const advance = parseFloat(document.getElementById("advance").value) || 0;
+      const mode = document.getElementById("mode").value;
+
+      if (!merchant || !total) {
+        alert("Please fill in all required fields.");
+        return;
+      }
+
+      const remaining = total - advance;
+
+      const newExpense = {
+        date: dateInput,
+        merchant,
+        total,
+        advance,
+        remaining,
+        mode,
+        status: "Pending",
       };
 
-      window.markPaid = function (index) {
-        expenses[index].status = "Paid";
-        saveData();
-        renderTable();
-      };
-
-      window.undoPaid = function (index) {
-        expenses[index].status = "Pending";
-        saveData();
-        renderTable();
-      };
-
-      renderTable();
+      expenses.push(newExpense);
+      saveData();
+      renderExpenses();
+      closeModal();
     });
+
+    window.deleteExpense = function (index) {
+      if (confirm("Delete this expense?")) {
+        expenses.splice(index, 1);
+        saveData();
+        renderExpenses();
+      }
+    };
+
+    window.markPaid = function (index) {
+      expenses[index].status = "Paid";
+      saveData();
+      renderExpenses();
+    };
+
+    window.undoPaid = function (index) {
+      expenses[index].status = "Pending";
+      saveData();
+      renderExpenses();
+    };
+
+    renderExpenses();
   </script>
 </body>
 </html>
