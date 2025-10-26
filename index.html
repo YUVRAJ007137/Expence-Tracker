@@ -470,7 +470,12 @@
     const form = document.getElementById("expenseForm");
 
     let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
-
+           expenses = expenses.map(exp => {
+        if (exp.remaining === undefined || isNaN(exp.remaining)) {
+          exp.remaining = (exp.total || 0) - (exp.advance || 0);
+        }
+        return exp;
+      });
     function migrateDates() {
       let needsSave = false;
       expenses = expenses.map(exp => {
@@ -705,3 +710,4 @@
 </body>
 </html>
   
+
