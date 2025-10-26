@@ -560,6 +560,7 @@
         if (exp.status === "Paid") {
           totalPaid += exp.total;
         } else {
+          totalPaid += exp.advance;
           totalPending += exp.remaining;
         }
       });
@@ -710,4 +711,5 @@
 </body>
 </html>
   
+
 
