@@ -721,13 +721,25 @@
     };
 
     window.markPaid = function (index) {
+      // Store original remaining before marking as paid
+      if (expenses[index].originalRemaining === undefined) {
+        expenses[index].originalRemaining = expenses[index].remaining;
+      }
       expenses[index].status = "Paid";
+      expenses[index].remaining = 0;
       saveData();
       renderExpenses();
     };
 
     window.undoPaid = function (index) {
       expenses[index].status = "Pending";
+      // Restore original remaining value
+      if (expenses[index].originalRemaining !== undefined) {
+        expenses[index].remaining = expenses[index].originalRemaining;
+      } else {
+        // Fallback: recalculate from total - advance
+        expenses[index].remaining = expenses[index].total - expenses[index].advance;
+      }
       saveData();
       renderExpenses();
     };
