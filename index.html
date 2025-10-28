@@ -47,7 +47,13 @@
       text-align: center;
       margin-top: 4px;
     }
-
+    /* Fix big number overflow in summary cards */
+.summary-card .amount {
+  font-size: clamp(16px, 4vw, 24px); /* Auto-adjust size */
+  word-break: break-word;           /* Allow wrapping */
+  overflow-wrap: anywhere;          /* Forces wrapping if needed */
+  text-align: center;               /* Keep centered */
+}
     .summary-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -711,5 +717,6 @@
 </body>
 </html>
   
+
 
 
