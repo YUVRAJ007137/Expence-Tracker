@@ -47,17 +47,11 @@
       text-align: center;
       margin-top: 4px;
     }
-    /* Fix big number overflow in summary cards */
-.summary-card .amount {
-  font-size: clamp(16px, 4vw, 24px); /* Auto-adjust size */
-  word-break: break-word;           /* Allow wrapping */
-  overflow-wrap: anywhere;          /* Forces wrapping if needed */
-  text-align: center;               /* Keep centered */
-}
+
     .summary-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
       padding: 16px;
       margin-bottom: 8px;
     }
@@ -66,44 +60,70 @@
       background: rgba(255, 255, 255, 0.98);
       backdrop-filter: blur(10px);
       border-radius: 20px;
-      padding: 20px 12px;
-      text-align: center;
+      padding: 20px 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
       box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
       transition: transform 0.2s;
       border: 2px solid rgba(255, 255, 255, 0.5);
     }
 
     .summary-card:active {
-      transform: scale(0.95);
+      transform: scale(0.98);
     }
 
     .summary-card .icon {
-      font-size: 32px;
-      margin-bottom: 12px;
+      font-size: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 40px;
+      min-width: 60px;
+      height: 60px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.5);
     }
 
     .summary-card.total .icon { color: #667eea; }
     .summary-card.paid .icon { color: #10b981; }
     .summary-card.pending .icon { color: #f59e0b; }
 
+    .summary-card .info {
+      flex: 1;
+      text-align: left;
+    }
+
     .summary-card .label {
-      font-size: 10px;
+      font-size: 11px;
       color: #6b7280;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
     }
 
     .summary-card .amount {
-      font-size: 24px;
+      font-size: 28px;
       font-weight: 800;
       color: #1f2937;
-      line-height: 1;
+      line-height: 1.2;
+      word-break: break-word;
+    }summary-card.total .icon { color: #667eea; }
+    .summary-card.paid .icon { color: #10b981; }
+    .summary-card.pending .icon { color: #f59e0b; }
+
+    .summary-card .label {
+      font-size: 11px;
+      color: #666;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .summary-card .amount {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1f2937;
     }
 
     .fab-button {
@@ -401,18 +421,24 @@
   <div class="summary-grid">
     <div class="summary-card total">
       <div class="icon"><i class="fas fa-wallet"></i></div>
-      <div class="label">Total</div>
-      <div class="amount" id="totalOverall">₹0</div>
+      <div class="info">
+        <div class="label">Total</div>
+        <div class="amount" id="totalOverall">₹0</div>
+      </div>
     </div>
     <div class="summary-card paid">
       <div class="icon"><i class="fas fa-check-circle"></i></div>
-      <div class="label">Paid</div>
-      <div class="amount" id="totalPaid">₹0</div>
+      <div class="info">
+        <div class="label">Paid</div>
+        <div class="amount" id="totalPaid">₹0</div>
+      </div>
     </div>
     <div class="summary-card pending">
       <div class="icon"><i class="fas fa-clock"></i></div>
-      <div class="label">Pending</div>
-      <div class="amount" id="totalPending">₹0</div>
+      <div class="info">
+        <div class="label">Pending</div>
+        <div class="amount" id="totalPending">₹0</div>
+      </div>
     </div>
   </div>
 
@@ -476,12 +502,7 @@
     const form = document.getElementById("expenseForm");
 
     let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
-           expenses = expenses.map(exp => {
-        if (exp.remaining === undefined || isNaN(exp.remaining)) {
-          exp.remaining = (exp.total || 0) - (exp.advance || 0);
-        }
-        return exp;
-      });
+
     function migrateDates() {
       let needsSave = false;
       expenses = expenses.map(exp => {
@@ -566,7 +587,6 @@
         if (exp.status === "Paid") {
           totalPaid += exp.total;
         } else {
-          totalPaid += exp.advance;
           totalPending += exp.remaining;
         }
       });
@@ -716,7 +736,3 @@
   </script>
 </body>
 </html>
-  
-
-
-
