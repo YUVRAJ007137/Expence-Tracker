@@ -587,6 +587,8 @@
         if (exp.status === "Paid") {
           totalPaid += exp.total;
         } else {
+          // For pending expenses, add the advance to paid
+          totalPaid += exp.advance;
           totalPending += exp.remaining;
         }
       });
