@@ -9,6 +9,7 @@
     rel="stylesheet"
   />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     * {
       margin: 0;
@@ -26,26 +27,36 @@
     .header {
       background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(10px);
-      padding: 20px 16px;
+      padding: 16px;
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
       position: sticky;
       top: 0;
       z-index: 100;
     }
 
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .header-title {
+      text-align: center;
+      flex: 1;
+    }
+
     .header h1 {
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 700;
       color: #667eea;
       margin: 0;
-      text-align: center;
     }
 
     .header .subtitle {
-      font-size: 13px;
+      font-size: 12px;
       color: #666;
-      text-align: center;
-      margin-top: 4px;
+      margin-top: 2px;
     }
 
     .summary-grid {
@@ -410,13 +421,224 @@
       font-size: 14px;
       opacity: 0.8;
     }
+
+    /* Auth Styles */
+    .auth-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .auth-card {
+      background: rgba(255, 255, 255, 0.98);
+      border-radius: 24px;
+      padding: 32px 24px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .auth-card h2 {
+      text-align: center;
+      color: #667eea;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .auth-card .subtitle {
+      text-align: center;
+      color: #6b7280;
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+
+    .auth-tabs {
+      display: flex;
+      margin-bottom: 24px;
+      background: #f3f4f6;
+      border-radius: 12px;
+      padding: 4px;
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      background: transparent;
+      border-radius: 10px;
+      font-weight: 600;
+      color: #6b7280;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .auth-tab.active {
+      background: white;
+      color: #667eea;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .auth-error {
+      background: #fee2e2;
+      color: #dc2626;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .auth-success {
+      background: #d1fae5;
+      color: #065f46;
+      padding: 12px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 14px;
+      display: none;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .user-email {
+      font-size: 11px;
+      color: #6b7280;
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      background: #f3f4f6;
+      padding: 4px 8px;
+      border-radius: 12px;
+    }
+
+    .logout-btn {
+      padding: 6px 10px;
+      border: none;
+      background: #fee2e2;
+      color: #dc2626;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid #e5e7eb;
+      border-top-color: #667eea;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .hidden {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>खर्च व्यवस्थापन</h1>
-    <div class="subtitle">Expense Tracker</div>
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
   </div>
+
+  <!-- Auth Screen -->
+  <div class="auth-container" id="authScreen">
+    <div class="auth-card">
+      <h2>खर्च व्यवस्थापन</h2>
+      <p class="subtitle">Expense Tracker</p>
+      
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="showAuthTab('login')">Login</button>
+        <button class="auth-tab" onclick="showAuthTab('signup')">Sign Up</button>
+      </div>
+
+      <div class="auth-error" id="authError"></div>
+      <div class="auth-success" id="authSuccess"></div>
+
+      <!-- Login Form -->
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" id="loginEmail" class="form-control" placeholder="Enter your email" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="loginPassword" class="form-control" placeholder="Enter your password" required />
+        </div>
+        <button type="submit" class="submit-btn">
+          <i class="fas fa-sign-in-alt"></i> Login
+        </button>
+      </form>
+
+      <!-- Signup Form -->
+      <form id="signupForm" class="hidden" onsubmit="handleSignup(event)">
+        <div class="form-group">
+          <label class="form-label">Name</label>
+          <input type="text" id="signupName" class="form-control" placeholder="Enter your name" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" id="signupEmail" class="form-control" placeholder="Enter your email" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="signupPassword" class="form-control" placeholder="Min 6 characters" minlength="6" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm Password</label>
+          <input type="password" id="signupConfirm" class="form-control" placeholder="Confirm password" required />
+        </div>
+        <button type="submit" class="submit-btn">
+          <i class="fas fa-user-plus"></i> Sign Up
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Main App (hidden until logged in) -->
+  <div id="mainApp" class="hidden">
+    <div class="header">
+      <div class="header-top">
+        <div class="user-info">
+          <span class="user-email" id="userEmail"></span>
+        </div>
+        <div class="header-title">
+          <h1>खर्च व्यवस्थापन</h1>
+          <div class="subtitle">Expense Tracker</div>
+        </div>
+        <div class="user-info">
+          <button class="logout-btn" onclick="handleLogout()">
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </button>
+        </div>
+      </div>
+    </div>
 
   <div class="summary-grid">
     <div class="summary-card total">
@@ -492,52 +714,277 @@
       </form>
     </div>
   </div>
+  </div>
 
   <script>
+    // Supabase Configuration
+    const SUPABASE_URL = 'https://jbpwrgjnzgjmhghimqjo.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpicHdyZ2puemdqbWhnaGltcWpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5OTA3MDAsImV4cCI6MjA4OTU2NjcwMH0.zL_AkueP5wz0slIbd4lppOgqE-zZBgNSw7T_SiErw5U';
+    
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // DOM Elements
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const authScreen = document.getElementById('authScreen');
+    const mainApp = document.getElementById('mainApp');
     const expenseList = document.getElementById("expenseList");
     const totalPaidEl = document.getElementById("totalPaid");
     const totalPendingEl = document.getElementById("totalPending");
     const totalOverallEl = document.getElementById("totalOverall");
     const modal = document.getElementById("expenseModal");
     const form = document.getElementById("expenseForm");
+    const authError = document.getElementById('authError');
+    const authSuccess = document.getElementById('authSuccess');
+    const userEmailEl = document.getElementById('userEmail');
 
-    let expenses = JSON.parse(localStorage.getItem("expenses")) || [];
+    let expenses = [];
+    let currentUser = null;
 
-    function migrateDates() {
-      let needsSave = false;
-      expenses = expenses.map(exp => {
-        if (/^\d{4}-\d{2}-\d{2}$/.test(exp.date)) {
-          return exp;
-        }
-        
-        needsSave = true;
-        let isoDate = exp.date;
-        
-        if (/^\d{1,2}\s+\w{3}\s+\d{4}$/.test(exp.date)) {
-          const parts = exp.date.split(' ');
-          const day = parts[0].padStart(2, '0');
-          const monthMap = {
-            'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04',
-            'May': '05', 'Jun': '06', 'Jul': '07', 'Aug': '08',
-            'Sep': '09', 'Oct': '10', 'Nov': '11', 'Dec': '12'
-          };
-          const month = monthMap[parts[1]];
-          const year = parts[2];
-          isoDate = `${year}-${month}-${day}`;
-        } else if (/^\d{2}-\d{2}-\d{4}$/.test(exp.date)) {
-          const [day, month, year] = exp.date.split("-");
-          isoDate = `${year}-${month}-${day}`;
-        }
-        
-        return { ...exp, date: isoDate };
-      });
+    // Auth Functions
+    function showAuthTab(tab) {
+      const loginForm = document.getElementById('loginForm');
+      const signupForm = document.getElementById('signupForm');
+      const tabs = document.querySelectorAll('.auth-tab');
       
-      if (needsSave) {
-        saveData();
+      tabs.forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+      
+      authError.style.display = 'none';
+      authSuccess.style.display = 'none';
+      
+      if (tab === 'login') {
+        loginForm.classList.remove('hidden');
+        signupForm.classList.add('hidden');
+      } else {
+        loginForm.classList.add('hidden');
+        signupForm.classList.remove('hidden');
       }
     }
 
-    migrateDates();
+    function showError(message) {
+      authError.textContent = message;
+      authError.style.display = 'block';
+      authSuccess.style.display = 'none';
+    }
+
+    function showSuccess(message) {
+      authSuccess.textContent = message;
+      authSuccess.style.display = 'block';
+      authError.style.display = 'none';
+    }
+
+    async function handleSignup(e) {
+      e.preventDefault();
+      const name = document.getElementById('signupName').value.trim();
+      const email = document.getElementById('signupEmail').value;
+      const password = document.getElementById('signupPassword').value;
+      const confirm = document.getElementById('signupConfirm').value;
+
+      if (password !== confirm) {
+        showError('Passwords do not match');
+        return;
+      }
+
+      loadingOverlay.classList.remove('hidden');
+      
+      const { data, error } = await supabaseClient.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name
+          }
+        }
+      });
+
+      loadingOverlay.classList.add('hidden');
+
+      if (error) {
+        showError(error.message);
+      } else if (data.user) {
+        currentUser = data.user;
+        showMainApp();
+      }
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+
+      loadingOverlay.classList.remove('hidden');
+
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      loadingOverlay.classList.add('hidden');
+
+      if (error) {
+        showError(error.message);
+      } else {
+        currentUser = data.user;
+        showMainApp();
+      }
+    }
+
+    async function handleLogout() {
+      loadingOverlay.classList.remove('hidden');
+      await supabaseClient.auth.signOut();
+      currentUser = null;
+      expenses = [];
+      loadingOverlay.classList.add('hidden');
+      showAuthScreen();
+    }
+
+    function showAuthScreen() {
+      authScreen.classList.remove('hidden');
+      mainApp.classList.add('hidden');
+    }
+
+    function showMainApp() {
+      authScreen.classList.add('hidden');
+      mainApp.classList.remove('hidden');
+      const userName = currentUser.user_metadata?.full_name || currentUser.email;
+      userEmailEl.textContent = userName;
+      loadExpenses();
+    }
+
+    // Check auth state on load
+    async function checkAuth() {
+      try {
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
+        
+        if (error) {
+          console.error('Auth error:', error);
+          showAuthScreen();
+        } else if (session) {
+          currentUser = session.user;
+          showMainApp();
+        } else {
+          showAuthScreen();
+        }
+      } catch (err) {
+        console.error('checkAuth error:', err);
+        showAuthScreen();
+      }
+      loadingOverlay.classList.add('hidden');
+    }
+
+    // Listen for auth changes
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_OUT') {
+        currentUser = null;
+        showAuthScreen();
+      }
+    });
+
+    // Database Functions
+    async function loadExpenses() {
+      loadingOverlay.classList.remove('hidden');
+      
+      const { data, error } = await supabaseClient
+        .from('expenses')
+        .select('*')
+        .order('date', { ascending: false });
+
+      loadingOverlay.classList.add('hidden');
+
+      if (error) {
+        console.error('Error loading expenses:', error);
+        alert('Failed to load expenses. Please refresh the page.');
+        return;
+      }
+
+      expenses = data || [];
+      renderExpenses();
+    }
+
+    async function saveExpense(expense) {
+      loadingOverlay.classList.remove('hidden');
+      
+      const { data, error } = await supabaseClient
+        .from('expenses')
+        .insert([{
+          user_id: currentUser.id,
+          merchant: expense.merchant,
+          date: expense.date,
+          total: expense.total,
+          advance: expense.advance,
+          remaining: expense.remaining,
+          mode: expense.mode,
+          status: expense.status,
+          original_remaining: expense.remaining
+        }])
+        .select();
+
+      loadingOverlay.classList.add('hidden');
+
+      if (error) {
+        console.error('Error saving expense:', error);
+        alert('Failed to save expense. Please try again.');
+        return false;
+      }
+
+      expenses.unshift(data[0]);
+      renderExpenses();
+      return true;
+    }
+
+    async function deleteExpenseFromDB(id) {
+      loadingOverlay.classList.remove('hidden');
+      
+      const { error } = await supabaseClient
+        .from('expenses')
+        .delete()
+        .eq('id', id);
+
+      loadingOverlay.classList.add('hidden');
+
+      if (error) {
+        console.error('Error deleting expense:', error);
+        alert('Failed to delete expense. Please try again.');
+        return false;
+      }
+
+      expenses = expenses.filter(exp => exp.id !== id);
+      renderExpenses();
+      return true;
+    }
+
+    async function updateExpenseStatus(id, status, remaining, originalRemaining) {
+      loadingOverlay.classList.remove('hidden');
+      
+      const updateData = { status, remaining };
+      if (originalRemaining !== undefined) {
+        updateData.original_remaining = originalRemaining;
+      }
+
+      const { error } = await supabaseClient
+        .from('expenses')
+        .update(updateData)
+        .eq('id', id);
+
+      loadingOverlay.classList.add('hidden');
+
+      if (error) {
+        console.error('Error updating expense:', error);
+        alert('Failed to update expense. Please try again.');
+        return false;
+      }
+
+      const expIndex = expenses.findIndex(exp => exp.id === id);
+      if (expIndex !== -1) {
+        expenses[expIndex].status = status;
+        expenses[expIndex].remaining = remaining;
+        if (originalRemaining !== undefined) {
+          expenses[expIndex].original_remaining = originalRemaining;
+        }
+      }
+      renderExpenses();
+      return true;
+    }
 
     function formatDateForDisplay(dateStr) {
       if (!dateStr) return "";
@@ -562,18 +1009,10 @@
         if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
           return new Date(dateStr + 'T00:00:00');
         }
-        if (/^\d{2}-\d{2}-\d{4}$/.test(dateStr)) {
-          const [day, month, year] = dateStr.split("-");
-          return new Date(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}T00:00:00`);
-        }
         return new Date(dateStr);
       } catch {
         return new Date(0);
       }
-    }
-
-    function saveData() {
-      localStorage.setItem("expenses", JSON.stringify(expenses));
     }
 
     function updateTotals() {
@@ -599,13 +1038,11 @@
     }
 
     function renderExpenses() {
-      const sortedExpenses = expenses
-        .map((exp, index) => ({ exp, originalIndex: index }))
-        .sort((a, b) => {
-          const dateA = parseDate(a.exp.date);
-          const dateB = parseDate(b.exp.date);
-          return dateB - dateA;
-        });
+      const sortedExpenses = [...expenses].sort((a, b) => {
+        const dateA = parseDate(a.date);
+        const dateB = parseDate(b.date);
+        return dateB - dateA;
+      });
 
       if (sortedExpenses.length === 0) {
         expenseList.innerHTML = `
@@ -616,7 +1053,7 @@
           </div>
         `;
       } else {
-        expenseList.innerHTML = sortedExpenses.map(({ exp, originalIndex }) => {
+        expenseList.innerHTML = sortedExpenses.map((exp) => {
           const modeIcon = exp.mode === 'Cash' ? '💵' : exp.mode === 'UPI' ? '📱' : '💳';
           return `
             <div class="expense-card">
@@ -646,14 +1083,14 @@
                   </span>
                 </div>
                 <div class="expense-actions">
-                  <button class="action-btn delete" onclick="deleteExpense(${originalIndex})">
+                  <button class="action-btn delete" onclick="deleteExpense('${exp.id}')">
                     <i class="fas fa-trash"></i>
                   </button>
                   ${exp.status === 'Pending' 
-                    ? `<button class="action-btn paid" onclick="markPaid(${originalIndex})">
+                    ? `<button class="action-btn paid" onclick="markPaid('${exp.id}')">
                         <i class="fas fa-check"></i>
                       </button>`
-                    : `<button class="action-btn undo" onclick="undoPaid(${originalIndex})">
+                    : `<button class="action-btn undo" onclick="undoPaid('${exp.id}')">
                         <i class="fas fa-undo"></i>
                       </button>`
                   }
@@ -682,7 +1119,7 @@
       }
     }
 
-    form.addEventListener("submit", function (e) {
+    form.addEventListener("submit", async function (e) {
       e.preventDefault();
 
       const dateInput = document.getElementById("date").value;
@@ -708,45 +1145,37 @@
         status: "Pending",
       };
 
-      expenses.push(newExpense);
-      saveData();
-      renderExpenses();
-      closeModal();
+      const success = await saveExpense(newExpense);
+      if (success) {
+        closeModal();
+      }
     });
 
-    window.deleteExpense = function (index) {
+    window.deleteExpense = async function (id) {
       if (confirm("Delete this expense?")) {
-        expenses.splice(index, 1);
-        saveData();
-        renderExpenses();
+        await deleteExpenseFromDB(id);
       }
     };
 
-    window.markPaid = function (index) {
-      // Store original remaining before marking as paid
-      if (expenses[index].originalRemaining === undefined) {
-        expenses[index].originalRemaining = expenses[index].remaining;
+    window.markPaid = async function (id) {
+      const exp = expenses.find(e => e.id === id);
+      if (exp) {
+        await updateExpenseStatus(id, "Paid", 0, exp.remaining);
       }
-      expenses[index].status = "Paid";
-      expenses[index].remaining = 0;
-      saveData();
-      renderExpenses();
     };
 
-    window.undoPaid = function (index) {
-      expenses[index].status = "Pending";
-      // Restore original remaining value
-      if (expenses[index].originalRemaining !== undefined) {
-        expenses[index].remaining = expenses[index].originalRemaining;
-      } else {
-        // Fallback: recalculate from total - advance
-        expenses[index].remaining = expenses[index].total - expenses[index].advance;
+    window.undoPaid = async function (id) {
+      const exp = expenses.find(e => e.id === id);
+      if (exp) {
+        const originalRemaining = exp.original_remaining !== undefined 
+          ? exp.original_remaining 
+          : (exp.total - exp.advance);
+        await updateExpenseStatus(id, "Pending", originalRemaining);
       }
-      saveData();
-      renderExpenses();
     };
 
-    renderExpenses();
+    // Initialize app
+    checkAuth();
   </script>
 </body>
 </html>
